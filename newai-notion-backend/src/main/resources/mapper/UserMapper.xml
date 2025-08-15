@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.newainotionbackend.mapper.UserMapper">
+
+    <!-- 用户结果映射 -->
+    <resultMap id="UserResultMap" type="com.example.newainotionbackend.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password_hash" jdbcType="VARCHAR" />
+        <result property="displayName" column="display_name"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="phoneNumber" column="phone_number"/>
+        <result property="bio" column="bio"/>
+        <result property="location" column="location"/>
+        <result property="website" column="website"/>
+        <result property="isEmailVerified" column="is_email_verified"/>
+        <result property="isPhoneVerified" column="is_phone_verified"/>
+        <result property="emailVerificationToken" column="email_verification_token"/>
+        <result property="emailVerificationExpiresAt" column="email_verification_expires_at"/>
+        <result property="passwordResetToken" column="reset_token_password"/>
+        <result property="loginCount" column="login_count"/>
+        <result property="status" column="status" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+        <result property="role" column="role" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+    </resultMap>
+
+    <!-- 根据用户名或邮箱查找用户 -->
+    <select id="findByUsernameOrEmail" resultMap="UserResultMap">
+        SELECT * FROM users 
+        WHERE username = #{username} OR email = #{email}
+        LIMIT 1
+    </select>
+
+    <!-- 根据用户名查找用户 -->
+    <select id="findByUsername" resultMap="UserResultMap">
+        SELECT * FROM users 
+        WHERE username = #{username}
+        LIMIT 1
+    </select>
+
+    <!-- 根据邮箱查找用户 -->
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT * FROM users 
+        WHERE email = #{email}
+        LIMIT 1
+    </select>
+
+    <!-- 根据密码重置令牌查找用户 -->
+    <select id="findByPasswordResetToken" resultMap="UserResultMap">
+        SELECT * FROM users 
+        WHERE password_reset_token = #{token}
+        AND password_reset_expires_at > NOW()
+        LIMIT 1
+    </select>
+
+    <!-- 根据邮箱验证令牌查找用户 -->
+    <select id="findByEmailVerificationToken" resultMap="UserResultMap">
+        SELECT * FROM users 
+        WHERE email_verification_token = #{token}
+        AND email_verification_expires_at > NOW()
+        LIMIT 1
+    </select>
+
+    <!-- 设置密码重置令牌 -->
+    <update id="setPasswordResetToken">
+        UPDATE users 
+        SET password_reset_token = #{token},
+            password_reset_expires_at = #{expiresAt}
+        WHERE id = #{userId}
+    </update>
+
+    <!-- 更新密码 -->
+    <update id="updatePassword">
+        UPDATE users 
+        SET password = #{password},
+            password_reset_token = NULL,
+            password_reset_expires_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{userId}
+    </update>
+
+    <!-- 设置邮箱验证令牌 -->
+    <update id="setEmailVerificationToken">
+        UPDATE users 
+        SET email_verification_token = #{token},
+            email_verification_expires_at = #{expiresAt}
+        WHERE id = #{userId}
+    </update>
+
+    <!-- 验证邮箱 -->
+    <update id="verifyEmail">
+        UPDATE users 
+        SET is_email_verified = true,
+            email_verification_token = NULL,
+            email_verification_expires_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{userId}
+    </update>
+
+    <!-- 更新最后登录时间 -->
+<!--    <update id="updateLastLoginAt">-->
+<!--        UPDATE users -->
+<!--        SET last_login_at = NOW(),-->
+<!--            login_count = login_count + 1,-->
+<!--            updated_at = NOW()-->
+<!--        WHERE id = #{userId}-->
+<!--    </update>-->
+
+</mapper>

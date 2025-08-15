@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.newainotionbackend.mapper.AiRequestMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.newainotionbackend.entity.AiRequest">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="document_id" property="documentId" jdbcType="VARCHAR"/>
+        <result column="request_type" property="requestType" jdbcType="VARCHAR"/>
+        <result column="prompt" property="prompt" jdbcType="CLOB"/>
+        <result column="response" property="response" jdbcType="CLOB"/>
+        <result column="model" property="model" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="error_message" property="errorMessage" jdbcType="CLOB"/>
+        <result column="tokens_used" property="tokensUsed" jdbcType="INTEGER"/>
+        <result column="cost" property="cost" jdbcType="DECIMAL"/>
+        <result column="processing_time" property="processingTime" jdbcType="BIGINT"/>
+        <result column="user_feedback" property="userFeedback" jdbcType="VARCHAR"/>
+        <result column="feedback_comment" property="feedbackComment" jdbcType="CLOB"/>
+        <result column="metadata" property="metadata" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+        <result column="completed_at" property="completedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 分页查询用户AI请求 -->
+    <select id="selectUserAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询文档AI请求 -->
+    <select id="selectDocumentAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE document_id = #{documentId}
+        <if test="requestType != null">
+            AND request_type = #{requestType}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询按请求类型的AI请求 -->
+    <select id="selectAiRequestsByTypePage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND request_type = #{requestType}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询按模型的AI请求 -->
+    <select id="selectAiRequestsByModelPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND model = #{model}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询按用户反馈的AI请求 -->
+    <select id="selectAiRequestsByFeedbackPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND user_feedback = #{userFeedback}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询时间范围内的AI请求 -->
+    <select id="selectAiRequestsByDateRangePage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND created_at BETWEEN #{startDate} AND #{endDate}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询失败的AI请求 -->
+    <select id="selectFailedAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND status = 'FAILED'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询成功的AI请求 -->
+    <select id="selectSuccessfulAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND status = 'COMPLETED'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询处理中的AI请求 -->
+    <select id="selectProcessingAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND status = 'PROCESSING'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询高成本AI请求 -->
+    <select id="selectHighCostAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND cost > #{minCost}
+        ORDER BY cost DESC
+    </select>
+
+    <!-- 分页查询最近AI请求 -->
+    <select id="selectRecentAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND created_at > #{after}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询慢响应AI请求 -->
+    <select id="selectSlowAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND processing_time > #{minProcessingTime}
+        ORDER BY processing_time DESC
+    </select>
+
+    <!-- 分页查询高token使用的AI请求 -->
+    <select id="selectHighTokenAiRequestsPage" resultMap="BaseResultMap">
+        SELECT * FROM ai_requests
+        WHERE user_id = #{userId}
+        AND tokens_used > #{minTokens}
+        ORDER BY tokens_used DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.newainotionbackend.mapper.DocumentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.newainotionbackend.entity.Document">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="folder_id" property="folderId" jdbcType="VARCHAR"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="CLOB"/>
+        <result column="summary" property="summary" jdbcType="CLOB"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="visibility" property="visibility" jdbcType="VARCHAR"/>
+        <result column="is_template" property="isTemplate" jdbcType="BOOLEAN"/>
+        <result column="template_id" property="templateId" jdbcType="VARCHAR"/>
+        <result column="is_favorite" property="isFavorite" jdbcType="BOOLEAN"/>
+        <result column="is_pinned" property="isPinned" jdbcType="BOOLEAN"/>
+        <result column="is_archived" property="isArchived" jdbcType="BOOLEAN"/>
+        <result column="view_count" property="viewCount" jdbcType="BIGINT"/>
+        <result column="like_count" property="likeCount" jdbcType="BIGINT"/>
+        <result column="comment_count" property="commentCount" jdbcType="BIGINT"/>
+        <result column="word_count" property="wordCount" jdbcType="BIGINT"/>
+        <result column="reading_time" property="readingTime" jdbcType="INTEGER"/>
+        <result column="tags" property="tags" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="collaborators" property="collaborators" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="permissions" property="permissions" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="metadata" property="metadata" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+        <result column="published_at" property="publishedAt" jdbcType="TIMESTAMP"/>
+        <result column="expires_at" property="expiresAt" jdbcType="TIMESTAMP"/>
+        <result column="last_viewed_at" property="lastViewedAt" jdbcType="TIMESTAMP"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 分页查询用户文档 -->
+    <select id="selectUserDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        <if test="folderId != null">
+            AND folder_id = #{folderId}
+        </if>
+        <if test="folderId == null">
+            AND folder_id IS NULL
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        AND status != 'DELETED'
+        ORDER BY is_pinned DESC, updated_at DESC
+    </select>
+
+    <!-- 分页搜索用户文档 -->
+    <select id="searchUserDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND (title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页搜索公开文档 -->
+    <select id="searchPublicDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE visibility = 'PUBLIC'
+        AND status = 'PUBLISHED'
+        AND (title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询收藏文档 -->
+    <select id="selectFavoriteDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND is_favorite = true
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询置顶文档 -->
+    <select id="selectPinnedDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND is_pinned = true
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询已归档文档 -->
+    <select id="selectArchivedDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND is_archived = true
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询最近文档 -->
+    <select id="selectRecentDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND updated_at > #{after}
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询最近查看的文档 -->
+    <select id="selectRecentViewedDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND last_viewed_at IS NOT NULL
+        AND status != 'DELETED'
+        ORDER BY last_viewed_at DESC
+    </select>
+
+    <!-- 分页查询公开文档 -->
+    <select id="selectPublicDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE visibility = #{visibility}
+        AND status = #{status}
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询热门文档 -->
+    <select id="selectPopularDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE visibility = #{visibility}
+        AND status = #{status}
+        ORDER BY view_count DESC
+    </select>
+
+    <!-- 分页查询最新发布的文档 -->
+    <select id="selectLatestPublishedDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE visibility = #{visibility}
+        AND status = #{status}
+        ORDER BY published_at DESC
+    </select>
+
+    <!-- 分页查询模板文档 -->
+    <select id="selectTemplateDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE template_id = #{templateId}
+        AND status != 'DELETED'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询模板 -->
+    <select id="selectTemplatesPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE is_template = true
+        AND status != 'DELETED'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询协作文档 -->
+    <select id="selectCollaborativeDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE JSON_CONTAINS(collaborators, JSON_OBJECT('userId', #{userId}))
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询带标签的文档 -->
+    <select id="selectDocumentsByTagsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        AND JSON_OVERLAPS(tags, #{tags})
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 分页查询未归档文档 -->
+    <select id="selectNonArchivedDocumentsPage" resultMap="BaseResultMap">
+        SELECT * FROM documents
+        WHERE user_id = #{userId}
+        <if test="folderId != null">
+            AND folder_id = #{folderId}
+        </if>
+        <if test="folderId == null">
+            AND folder_id IS NULL
+        </if>
+        AND is_archived = false
+        AND status != 'DELETED'
+        ORDER BY updated_at DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.newainotionbackend.mapper.CommentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.newainotionbackend.entity.Comment">
+        <id column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="document_id" property="documentId" jdbcType="VARCHAR"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="parent_id" property="parentId" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="CLOB"/>
+        <result column="is_resolved" property="isResolved" jdbcType="BOOLEAN"/>
+        <result column="resolved_by" property="resolvedBy" jdbcType="BIGINT"/>
+        <result column="resolved_at" property="resolvedAt" jdbcType="TIMESTAMP"/>
+        <result column="like_count" property="likeCount" jdbcType="INTEGER"/>
+        <result column="reply_count" property="replyCount" jdbcType="INTEGER"/>
+        <result column="mentioned_users" property="mentionedUsers" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="attachments" property="attachments" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="metadata" property="metadata" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 分页查询文档评论 -->
+    <select id="selectDocumentCommentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        <if test="parentId != null">
+            AND parent_id = #{parentId}
+        </if>
+        <if test="parentId == null">
+            AND parent_id IS NULL
+        </if>
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 分页查询用户评论 -->
+    <select id="selectUserCommentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询回复评论 -->
+    <select id="selectRepliesPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE parent_id = #{parentId}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 分页查询提及用户的评论 -->
+    <select id="selectCommentsByMentionedUserPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE JSON_CONTAINS(mentioned_users, #{userId})
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询已解决的评论 -->
+    <select id="selectResolvedCommentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        AND is_resolved = true
+        ORDER BY resolved_at DESC
+    </select>
+
+    <!-- 分页查询未解决的评论 -->
+    <select id="selectUnresolvedCommentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        AND is_resolved = false
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 分页查询时间范围内的评论 -->
+    <select id="selectCommentsByDateRangePage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        AND created_at BETWEEN #{startDate} AND #{endDate}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 分页查询带附件的评论 -->
+    <select id="selectCommentsWithAttachmentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        AND JSON_LENGTH(attachments) > 0
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页查询热门评论 -->
+    <select id="selectPopularCommentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        AND like_count > #{minLikes}
+        ORDER BY like_count DESC
+    </select>
+
+    <!-- 分页查询最近评论 -->
+    <select id="selectRecentCommentsPage" resultMap="BaseResultMap">
+        SELECT * FROM comments
+        WHERE document_id = #{documentId}
+        AND created_at > #{after}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>
