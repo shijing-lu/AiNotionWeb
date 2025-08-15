@@ -1,8 +1,11 @@
 blank_issues_enabled: false  # 强制用户必须选择模板
 contact_links:
-  - name: 🛡️ 安全漏洞报告
-    url: https://github.com/your-repo/SECURITY.md
-    about: 请阅读安全政策后提交漏洞报告
-  - name: 💬 讨论与帮助
-    url: https://your-forum.link
-    about: 使用问题请前往社区论坛
+  - name: 💬 获取帮助
+    url: https://github.com/NewAINotion/NewAINotion/discussions
+    about: 在讨论区提问和寻求帮助
+  - name: 🚀 新功能提案
+    url: https://github.com/NewAINotion/NewAINotion/discussions/categories/ideas
+    about: 在讨论区分享您的功能想法
+  - name: 📧 联系我们
+    url: mailto:support@newainotion.com
+    about: 通过邮件联系项目维护者
