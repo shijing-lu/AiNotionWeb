@@ -1,0 +1,8 @@
+blank_issues_enabled: false  # 强制用户必须选择模板
+contact_links:
+  - name: 🛡️ 安全漏洞报告
+    url: https://github.com/your-repo/SECURITY.md
+    about: 请阅读安全政策后提交漏洞报告
+  - name: 💬 讨论与帮助
+    url: https://your-forum.link
+    about: 使用问题请前往社区论坛
